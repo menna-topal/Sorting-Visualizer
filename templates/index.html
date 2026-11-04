@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SortViz Racing</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f0f4ff;
+  --surface:#fff;
+  --border:#dde3f8;
+  --text:#1e1b4b;
+  --muted:#6b7280;
+}
+body{
+  font-family:'Nunito',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
+/* HEADER */
+header{
+  background:var(--surface);
+  border-bottom:2px solid var(--border);
+  padding:10px 24px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-shrink:0;
+  box-shadow:0 2px 12px rgba(99,102,241,0.08);
+}
+.logo{font-size:1.6rem;}
+.title{
+  font-size:1.5rem;font-weight:900;
+  background:linear-gradient(120deg,#6366f1,#f43f8e);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.badge{
+  background:linear-gradient(135deg,#6366f1,#f43f8e);
+  color:#fff;font-weight:800;font-size:0.7rem;
+  padding:4px 12px;border-radius:99px;letter-spacing:0.05em;
+  margin-left:6px;
+}
+.ml{margin-left:auto;display:flex;gap:8px;align-items:center;}
+.hbtn{
+  background:var(--bg);border:2px solid var(--border);
+  border-radius:8px;padding:6px 14px;cursor:pointer;
+  font-family:'Nunito',sans-serif;font-size:0.78rem;font-weight:800;
+  color:var(--muted);transition:all 0.15s;
+}
+.hbtn:hover,.hbtn.on{border-color:#6366f1;color:#6366f1;background:rgba(99,102,241,0.08);}
+
+/* CONTROLS */
+.controls{
+  background:var(--surface);
+  border-bottom:2px solid var(--border);
+  padding:8px 24px;
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  flex-shrink:0;
+}
+.cg{display:flex;align-items:center;gap:8px;}
+.cl{font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);white-space:nowrap;}
+.cv{font-size:0.78rem;font-weight:800;color:#6366f1;font-family:'JetBrains Mono',monospace;min-width:22px;}
+input[type=range]{accent-color:#6366f1;cursor:pointer;width:100px;}
+select{
+  background:var(--bg);border:2px solid var(--border);
+  color:var(--text);font-family:'Nunito',sans-serif;
+  font-size:0.78rem;font-weight:700;padding:6px 10px;
+  border-radius:8px;cursor:pointer;outline:none;
+}
+.btn{
+  padding:7px 18px;font-family:'Nunito',sans-serif;
+  font-size:0.8rem;font-weight:800;border:none;
+  border-radius:8px;cursor:pointer;transition:all 0.15s;
+  text-transform:uppercase;white-space:nowrap;
+}
+.btn-gen{background:var(--bg);border:2px solid var(--border);color:var(--text);}
+.btn-gen:hover{border-color:#6366f1;color:#6366f1;}
+.btn-race{
+  background:linear-gradient(135deg,#6366f1,#818cf8);
+  color:#fff;box-shadow:0 4px 14px rgba(99,102,241,0.3);
+}
+.btn-race:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(99,102,241,0.4);}
+.btn-race:disabled{background:#dde3f8;color:var(--muted);box-shadow:none;transform:none;cursor:not-allowed;}
+.btn-stop{background:rgba(244,63,142,0.1);border:2px solid #f43f8e;color:#f43f8e;}
+
+/* MAIN AREA */
+.main{
+  flex:1;
+  display:grid;
+  grid-template-columns:1fr 290px;
+  min-height:0;
+  overflow:hidden;
+}
+
+/* LEFT: race lanes */
+.lanes{
+  padding:12px 16px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  overflow:hidden;
+  min-height:0;
+}
+.lane{
+  flex:1;
+  background:var(--surface);
+  border:2px solid var(--border);
+  border-radius:12px;
+  padding:8px 12px;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  min-height:0;
+  overflow:hidden;
+  transition:border-color 0.3s,box-shadow 0.3s;
+}
+.lane.winner{
+  border-color:gold !important;
+  box-shadow:0 0 0 3px rgba(255,215,0,0.25),0 4px 20px rgba(255,215,0,0.15) !important;
+}
+.lane-top{
+  display:flex;align-items:center;gap:8px;flex-shrink:0;
+}
+.dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+.lane-name{font-size:0.8rem;font-weight:800;}
+.lane-complexity{font-size:0.6rem;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+.lane-stats{
+  margin-left:auto;display:flex;gap:10px;
+  font-size:0.65rem;color:var(--muted);font-weight:700;
+}
+.lane-status{font-weight:800;}
+.bars{
+  flex:1;
+  display:flex;
+  align-items:flex-end;
+  gap:2px;
+  min-height:0;
+  overflow:hidden;
+}
+.bar{
+  flex:1;
+  border-radius:3px 3px 0 0;
+  min-width:2px;
+  transition:height 0.035s,background-color 0.05s;
+}
+.pbar-wrap{height:4px;background:#eee;border-radius:99px;overflow:hidden;flex-shrink:0;}
+.pbar-fill{height:100%;border-radius:99px;transition:width 0.1s;width:0%;}
+
+/* RIGHT PANEL */
+.right{
+  border-left:2px solid var(--border);
+  background:var(--surface);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  min-height:0;
+}
+.rpanel{
+  flex:1;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  min-height:0;
+  border-bottom:2px solid var(--border);
+}
+.rpanel-title{
+  font-size:0.67rem;font-weight:800;text-transform:uppercase;
+  letter-spacing:0.1em;color:var(--muted);flex-shrink:0;
+}
+#graph-canvas{
+  flex:1;width:100%;border-radius:8px;
+  background:var(--bg);min-height:0;
+}
+.graph-legend{display:flex;flex-direction:column;gap:3px;flex-shrink:0;}
+.gli{display:flex;align-items:center;gap:6px;font-size:0.63rem;font-weight:700;color:var(--muted);}
+.gll{width:16px;height:3px;border-radius:99px;}
+
+/* THOUGHTS */
+.thoughts{
+  flex-shrink:0;
+  max-height:200px;
+  overflow-y:auto;
+  padding:10px 12px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.thought-card{
+  border-radius:8px;
+  border:1.5px solid var(--border);
+  border-left-width:4px;
+  padding:7px 10px;
+  font-size:0.68rem;
+  line-height:1.5;
+  font-weight:600;
+  background:var(--bg);
+  animation:fadeIn 0.2s ease;
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+.thought-tag{font-size:0.58rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px;}
+.thought-text{color:var(--muted);}
+
+/* LEADERBOARD STRIP */
+.lb{
+  background:var(--surface);
+  border-top:2px solid var(--border);
+  padding:8px 16px;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  flex-shrink:0;
+}
+.lb-title{font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);}
+.lb-item{
+  display:flex;align-items:center;gap:5px;
+  font-size:0.7rem;font-weight:800;
+  padding:3px 10px;border-radius:99px;
+  border:1.5px solid var(--border);background:var(--bg);
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🏎️</div>
+  <div class="title">SortViz Racing</div>
+  <div class="badge">🏁 Race Mode</div>
+  <div class="ml">
+    <a href="/explore" class="hbtn" style="text-decoration:none;">🔍 Code Explorer</a>
+    <button class="hbtn on" id="sound-btn">🔊 Sound ON</button>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="cg">
+    <span class="cl">Array Size</span>
+    <input type="range" id="size-sl" min="8" max="45" value="20"/>
+    <span class="cv" id="size-v">20</span>
+  </div>
+  <div class="cg">
+    <span class="cl">Speed</span>
+    <input type="range" id="speed-sl" min="1" max="10" value="6"/>
+    <span class="cv" id="speed-v">6</span>
+  </div>
+  <div class="cg">
+    <span class="cl">Order</span>
+    <select id="order-sel">
+      <option value="random">🎲 Random</option>
+      <option value="sorted">✅ Already Sorted</option>
+      <option value="reversed">🔄 Reversed</option>
+      <option value="nearly">〰️ Nearly Sorted</option>
+    </select>
+  </div>
+  <button class="btn btn-gen"  id="gen-btn">↺ New Array</button>
+  <button class="btn btn-race" id="race-btn">🏁 Start Race!</button>
+  <button class="btn btn-stop" id="stop-btn" disabled>■ Stop</button>
+</div>
+
+<div class="main">
+  <div class="lanes" id="lanes"></div>
+
+  <div class="right">
+    <div class="rpanel">
+      <div class="rpanel-title">📈 Live Comparisons Graph</div>
+      <canvas id="graph-canvas"></canvas>
+      <div class="graph-legend" id="graph-legend"></div>
+    </div>
+    <div class="thoughts" id="thoughts">
+      <div class="rpanel-title">🧠 Algorithm Thoughts</div>
+      <div style="font-size:0.7rem;color:var(--muted);font-weight:600;padding:4px 0;">
+        Start the race to see real-time thoughts!
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="lb" id="lb">
+  <span class="lb-title">🏆 Leaderboard</span>
+  <span style="font-size:0.72rem;color:var(--muted);">Start the race to see rankings!</span>
+</div>
+
+<script>
+/* ═══════════════════════════════
+   ALGORITHM DEFINITIONS
+═══════════════════════════════ */
+const ALGOS = [
+  {
+    key:"bubble",    name:"Bubble Sort",    emoji:"🫧", color:"#6366f1", complexity:"O(n²)",
+    think:{
+      cmp:(a,b,v1,v2)=>`Positions ${a} & ${b}: Is ${v1} > ${v2}? ${v1>v2?"Yes → swapping! 🔄":"No → move on."}`,
+      swp:(a,b,v1,v2)=>`Swapped ${v1} ↔ ${v2}. Bigger element bubbles up! 🫧`,
+      done:(c,s)=>`Finished with ${c} comparisons & ${s} swaps. All bubbles settled! ✅`
+    }
+  },
+  {
+    key:"selection", name:"Selection Sort", emoji:"🎯", color:"#f43f8e", complexity:"O(n²)",
+    think:{
+      cmp:(a,b,v1,v2)=>`Is ${v2} at pos ${b} a new minimum? ${v2<v1?"Yes! New min found 🎯":"No, keep scanning."}`,
+      swp:(a,b,v1,v2)=>`Placing minimum ${v2} into position ${a}. 🎯`,
+      done:(c,s)=>`Done! ${c} comparisons, only ${s} swaps — minimal swaps is selection sort's strength! ✅`
+    }
+  },
+  {
+    key:"insertion", name:"Insertion Sort", emoji:"📌", color:"#f59e0b", complexity:"O(n²)",
+    think:{
+      cmp:(a,b,v1,v2)=>`Inserting element: does ${v2} go before ${v1}? ${v2<v1?"Yes, shift right! 📌":"No, insert here."}`,
+      swp:(a,b,v1,v2)=>`Shifting ${v1} right to make space for ${v2}. Building sorted left side… 📌`,
+      done:(c,s)=>`Complete! ${c} comparisons. Insertion sort shines on nearly-sorted data! ✅`
+    }
+  },
+  {
+    key:"merge",     name:"Merge Sort",     emoji:"🔀", color:"#10b981", complexity:"O(n log n)",
+    think:{
+      cmp:(a,b,v1,v2)=>`Merging halves — ${v1} vs ${v2}. Taking ${Math.min(v1,v2)} first. 🔀`,
+      swp:(a,b,v1,v2)=>`Took ${v2} from right half (it was smaller). Merge continues… 🔀`,
+      done:(c,s)=>`Merged! ${c} comparisons. Divide & conquer guarantees O(n log n) always! ✅`
+    }
+  },
+  {
+    key:"quick",     name:"Quick Sort",     emoji:"⚡", color:"#ef4444", complexity:"O(n log n)",
+    think:{
+      cmp:(a,b,v1,v2)=>`Pivot is ${v2}. Is ${v1} ≤ pivot? ${v1<=v2?"Yes → stays left ⚡":"No → goes right."}`,
+      swp:(a,b,v1,v2)=>`Partitioning! Moving ${v1} left of pivot ${v2}. ⚡`,
+      done:(c,s)=>`Sorted! ${c} comparisons. Quick sort is the fastest in practice! ✅`
+    }
+  },
+];
+
+/* ═══════════════════════════════
+   AUDIO
+═══════════════════════════════ */
+let AC = null, soundOn = true;
+document.getElementById("sound-btn").onclick = () => {
+  soundOn = !soundOn;
+  const b = document.getElementById("sound-btn");
+  b.textContent = soundOn ? "🔊 Sound ON" : "🔇 Sound OFF";
+  b.classList.toggle("on", soundOn);
+};
+function initAudio() {
+  if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+  if (AC.state === "suspended") AC.resume();
+}
+function beep(freq, type="sine", dur=0.06, vol=0.07) {
+  if (!soundOn || !AC) return;
+  try {
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.connect(g); g.connect(AC.destination);
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime + dur);
+    o.start(); o.stop(AC.currentTime + dur);
+  } catch(e){}
+}
+function winSound() {
+  [523,659,784,1047,1319].forEach((f,i) =>
+    setTimeout(() => beep(f,"sine",0.2,0.18), i*100)
+  );
+}
+
+/* ═══════════════════════════════
+   STATE
+═══════════════════════════════ */
+let sharedArr = [];
+let allSteps  = {};   // key → steps[]
+let graphData = {};   // key → [comparisons over time]
+let finished  = [];   // keys in finish order
+let stopFlag  = false;
+const GPOINTS = 100;
+const MEDALS  = ["🥇","🥈","🥉","4️⃣","5️⃣"];
+
+/* ═══════════════════════════════
+   BUILD LANES
+═══════════════════════════════ */
+function buildLanes() {
+  const lanesEl = document.getElementById("lanes");
+  lanesEl.innerHTML = "";
+  ALGOS.forEach(a => {
+    lanesEl.innerHTML += `
+    <div class="lane" id="lane-${a.key}" style="border-color:${a.color}22">
+      <div class="lane-top">
+        <div class="dot" style="background:${a.color}"></div>
+        <span class="lane-name" style="color:${a.color}">${a.emoji} ${a.name}</span>
+        <span class="lane-complexity">${a.complexity}</span>
+        <div class="lane-stats">
+          <span>Cmp: <span id="cmp-${a.key}" style="color:${a.color}">0</span></span>
+          <span>Swp: <span id="swp-${a.key}" style="color:${a.color}">0</span></span>
+          <span class="lane-status" id="st-${a.key}" style="color:${a.color}">Ready</span>
+        </div>
+      </div>
+      <div class="bars" id="bars-${a.key}"></div>
+      <div class="pbar-wrap">
+        <div class="pbar-fill" id="pb-${a.key}" style="background:${a.color}"></div>
+      </div>
+    </div>`;
+  });
+}
+
+function buildLegend() {
+  const el = document.getElementById("graph-legend");
+  el.innerHTML = ALGOS.map(a =>
+    `<div class="gli"><div class="gll" style="background:${a.color}"></div>${a.emoji} ${a.name}</div>`
+  ).join("");
+}
+
+/* ═══════════════════════════════
+   RENDER BARS
+═══════════════════════════════ */
+function drawBars(key, arr, step, color) {
+  const wrap = document.getElementById(`bars-${key}`);
+  if (!wrap || !arr || !arr.length) return;
+
+  const max    = Math.max(...arr);
+  const wrapH  = wrap.clientHeight || 50;
+  const cmpSet = new Set(step?.comparing || []);
+  const srtSet = new Set(step?.sorted_indices || []);
+  const mrgSet = new Set(step?.merge_range || []);
+  const pivot  = step?.pivot_index;
+  const swpd   = step?.swapped || false;
+
+  // Only rebuild DOM if array length changed (performance)
+  if (wrap.children.length !== arr.length) {
+    wrap.innerHTML = arr.map(() => `<div class="bar"></div>`).join("");
+  }
+
+  const bars = wrap.children;
+  arr.forEach((v, i) => {
+    const bar = bars[i];
+    const h   = Math.max(4, Math.round((v / max) * (wrapH - 6)));
+    bar.style.height = h + "px";
+
+    if (step?.done) {
+      bar.style.backgroundColor = color;
+    } else if (cmpSet.has(i)) {
+      bar.style.backgroundColor = swpd ? "#a855f7" : "#fb7185";
+    } else if (srtSet.has(i) && !mrgSet.size) {
+      bar.style.backgroundColor = color + "cc";
+    } else if (mrgSet.has(i)) {
+      bar.style.backgroundColor = color + "55";
+    } else if (i === pivot) {
+      bar.style.backgroundColor = "#fbbf24";
+    } else {
+      bar.style.backgroundColor = color + "44";
+    }
+  });
+}
+
+/* ═══════════════════════════════
+   COMPLEXITY GRAPH
+═══════════════════════════════ */
+function drawGraph() {
+  const canvas = document.getElementById("graph-canvas");
+  const W = canvas.clientWidth;
+  const H = canvas.clientHeight;
+  if (!W || !H) return;
+  canvas.width  = W * devicePixelRatio;
+  canvas.height = H * devicePixelRatio;
+  const ctx = canvas.getContext("2d");
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+  ctx.clearRect(0, 0, W, H);
+
+  // grid lines
+  ctx.strokeStyle = "#dde3f844";
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 3; i++) {
+    const y = 8 + (i / 3) * (H - 16);
+    ctx.beginPath(); ctx.moveTo(28, y); ctx.lineTo(W - 4, y); ctx.stroke();
+  }
+
+  // find global max
+  let maxCmp = 10;
+  ALGOS.forEach(a => {
+    const d = graphData[a.key];
+    if (d && d.length) maxCmp = Math.max(maxCmp, d[d.length - 1]);
+  });
+
+  // draw each algo line
+  ALGOS.forEach(a => {
+    const d = graphData[a.key];
+    if (!d || d.length < 2) return;
+    ctx.strokeStyle = a.color;
+    ctx.lineWidth = 2.5;
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    d.forEach((cmp, i) => {
+      const x = 28 + (i / (GPOINTS - 1)) * (W - 32);
+      const y = H - 8 - (cmp / maxCmp) * (H - 16);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // end dot
+    const last = d[d.length - 1];
+    const x = 28 + ((d.length - 1) / (GPOINTS - 1)) * (W - 32);
+    const y = H - 8 - (last / maxCmp) * (H - 16);
+    ctx.fillStyle = a.color;
+    ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI * 2); ctx.fill();
+  });
+
+  // axis labels
+  ctx.fillStyle = "#9ca3af";
+  ctx.font = "9px 'JetBrains Mono'";
+  ctx.fillText(maxCmp, 0, 12);
+  ctx.fillText("0", 2, H - 4);
+}
+
+/* ═══════════════════════════════
+   THOUGHTS PANEL
+═══════════════════════════════ */
+let thoughtCount = 0;
+function addThought(algo, text) {
+  const el = document.getElementById("thoughts");
+  // limit to 7 cards
+  const cards = el.querySelectorAll(".thought-card");
+  if (cards.length >= 7) cards[0].remove();
+
+  const card = document.createElement("div");
+  card.className = "thought-card";
+  card.style.borderLeftColor = algo.color;
+  card.innerHTML = `
+    <div class="thought-tag" style="color:${algo.color}">${algo.emoji} ${algo.name}</div>
+    <div class="thought-text">${text}</div>`;
+  el.appendChild(card);
+  el.scrollTop = el.scrollHeight;
+}
+
+/* ═══════════════════════════════
+   LEADERBOARD
+═══════════════════════════════ */
+function updateLB() {
+  const lb = document.getElementById("lb");
+  if (!finished.length) return;
+  lb.innerHTML = `<span class="lb-title">🏆 Leaderboard</span>`;
+  finished.forEach((key, i) => {
+    const a    = ALGOS.find(x => x.key === key);
+    const last = (allSteps[key] || []).slice(-1)[0] || {};
+    lb.innerHTML += `
+      <div class="lb-item">
+        <span>${MEDALS[i]}</span>
+        <div class="dot" style="background:${a.color}"></div>
+        <span style="color:${a.color}">${a.name}</span>
+        <span style="font-size:0.62rem;color:var(--muted);font-family:'JetBrains Mono',monospace">
+          ${last.comparisons||0}cmp · ${last.swaps||0}swp
+        </span>
+      </div>`;
+  });
+}
+
+/* ═══════════════════════════════
+   GENERATE ARRAY
+═══════════════════════════════ */
+async function genArray() {
+  const size  = +document.getElementById("size-sl").value;
+  const order = document.getElementById("order-sel").value;
+  const res   = await fetch(`/generate?size=${size}&order=${order}`);
+  const data  = await res.json();
+  sharedArr = data.array;
+  allSteps  = {};
+  graphData = {};
+  finished  = [];
+
+  buildLanes();
+  ALGOS.forEach(a => drawBars(a.key, sharedArr, null, a.color));
+
+  document.getElementById("lb").innerHTML =
+    `<span class="lb-title">🏆 Leaderboard</span>
+     <span style="font-size:0.72rem;color:var(--muted);">Start the race!</span>`;
+
+  document.getElementById("thoughts").innerHTML =
+    `<div class="rpanel-title">🧠 Algorithm Thoughts</div>
+     <div style="font-size:0.7rem;color:var(--muted);font-weight:600;padding:4px 0;">
+       Start the race to see real-time thoughts!
+     </div>`;
+
+  drawGraph();
+}
+
+/* ═══════════════════════════════
+   RACE
+═══════════════════════════════ */
+async function startRace() {
+  initAudio();
+  if (!sharedArr.length) await genArray();
+
+  document.getElementById("race-btn").disabled = true;
+  document.getElementById("stop-btn").disabled = false;
+  document.getElementById("gen-btn").disabled  = true;
+  stopFlag = false;
+  finished = [];
+
+  // init graph data
+  ALGOS.forEach(a => { graphData[a.key] = [0]; });
+
+  // fetch all steps in parallel
+  await Promise.all(ALGOS.map(async a => {
+    const res = await fetch("/sort", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({algorithm: a.key, array: sharedArr})
+    });
+    const d = await res.json();
+    allSteps[a.key] = d.steps;
+  }));
+
+  const maxSteps = Math.max(...ALGOS.map(a => allSteps[a.key].length));
+  const maxVal   = Math.max(...sharedArr);
+
+  let frame = 0;
+
+  while (frame < maxSteps && !stopFlag) {
+    const speed = +document.getElementById("speed-sl").value;
+    const delay = Math.round(510 - speed * 50);
+
+    ALGOS.forEach(a => {
+      const steps = allSteps[a.key];
+      const idx   = Math.min(frame, steps.length - 1);
+      const step  = steps[idx];
+
+      // draw bars
+      drawBars(a.key, step.array, step, a.color);
+
+      // update stats
+      document.getElementById(`cmp-${a.key}`).textContent = step.comparisons || 0;
+      document.getElementById(`swp-${a.key}`).textContent = step.swaps || 0;
+
+      // progress bar
+      document.getElementById(`pb-${a.key}`).style.width =
+        `${Math.round((idx / (steps.length - 1)) * 100)}%`;
+
+      // graph data (sample evenly)
+      const gidx = Math.min(
+        Math.floor((idx / steps.length) * GPOINTS),
+        GPOINTS - 1
+      );
+      while (graphData[a.key].length <= gidx) {
+        graphData[a.key].push(step.comparisons || 0);
+      }
+      graphData[a.key][gidx] = step.comparisons || 0;
+
+      // winner / done detection
+      if (step.done && !finished.includes(a.key)) {
+        finished.push(a.key);
+        document.getElementById(`st-${a.key}`).textContent = "✅ Done!";
+        document.getElementById(`pb-${a.key}`).style.width = "100%";
+        // fill remaining graph
+        while (graphData[a.key].length < GPOINTS) {
+          graphData[a.key].push(step.comparisons || 0);
+        }
+        if (finished.length === 1) {
+          document.getElementById(`lane-${a.key}`).classList.add("winner");
+          winSound();
+        }
+        addThought(a, a.think.done(step.comparisons, step.swaps));
+        updateLB();
+      } else if (!step.done) {
+        const pct = Math.round((idx / (steps.length - 1)) * 100);
+        document.getElementById(`st-${a.key}`).textContent = `${pct}%`;
+      }
+
+      // sounds (only bubble to avoid chaos)
+      if (a.key === "bubble" && step.comparing?.length && frame % 2 === 0) {
+        const v = step.array[step.comparing[0]] || 50;
+        step.swapped
+          ? beep(280 + (v/maxVal)*700, "triangle", 0.07, 0.07)
+          : beep(160 + (v/maxVal)*480, "sine",     0.05, 0.04);
+      }
+    });
+
+    // thoughts every 20 frames — pick a random algo that's still running
+    if (frame % 20 === 0) {
+      const running = ALGOS.filter(a => {
+        const idx = Math.min(frame, allSteps[a.key].length-1);
+        return !allSteps[a.key][idx]?.done;
+      });
+      if (running.length) {
+        const a    = running[Math.floor(Math.random() * running.length)];
+        const idx  = Math.min(frame, allSteps[a.key].length - 1);
+        const step = allSteps[a.key][idx];
+        if (step?.comparing?.length) {
+          const [i, j] = step.comparing;
+          const v1 = step.array[i], v2 = step.array[j];
+          addThought(a, step.swapped
+            ? a.think.swp(i, j, v1, v2)
+            : a.think.cmp(i, j, v1, v2)
+          );
+        }
+      }
+    }
+
+    drawGraph();
+    await new Promise(r => setTimeout(r, delay));
+    frame++;
+  }
+
+  // finalize any unfinished
+  ALGOS.forEach(a => {
+    const last = allSteps[a.key]?.slice(-1)[0];
+    if (!last) return;
+    drawBars(a.key, last.array, last, a.color);
+    document.getElementById(`cmp-${a.key}`).textContent = last.comparisons || 0;
+    document.getElementById(`swp-${a.key}`).textContent = last.swaps || 0;
+    document.getElementById(`pb-${a.key}`).style.width = "100%";
+    document.getElementById(`st-${a.key}`).textContent = "✅ Done!";
+    if (!finished.includes(a.key)) finished.push(a.key);
+
+    while (graphData[a.key].length < GPOINTS)
+      graphData[a.key].push(last.comparisons || 0);
+  });
+
+  updateLB();
+  drawGraph();
+
+  document.getElementById("race-btn").disabled = false;
+  document.getElementById("stop-btn").disabled = true;
+  document.getElementById("gen-btn").disabled  = false;
+}
+
+/* ═══════════════════════════════
+   EVENTS
+═══════════════════════════════ */
+document.getElementById("size-sl").oninput  = e => document.getElementById("size-v").textContent  = e.target.value;
+document.getElementById("speed-sl").oninput = e => document.getElementById("speed-v").textContent = e.target.value;
+document.getElementById("gen-btn").onclick  = genArray;
+document.getElementById("race-btn").onclick = startRace;
+document.getElementById("stop-btn").onclick = () => {
+  stopFlag = true;
+  document.getElementById("stop-btn").disabled = true;
+  document.getElementById("race-btn").disabled = false;
+  document.getElementById("gen-btn").disabled  = false;
+};
+
+window.addEventListener("resize", drawGraph);
+
+/* ═══════════════════════════════
+   INIT
+═══════════════════════════════ */
+buildLanes();
+buildLegend();
+genArray();
+</script>
+</body>
+</html>

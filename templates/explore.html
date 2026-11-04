@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SortViz — Code Explorer</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f0f4ff;
+  --surface:#fff;
+  --border:#dde3f8;
+  --text:#1e1b4b;
+  --muted:#6b7280;
+  --accent:#6366f1;
+  --pink:#f43f8e;
+  --green:#10b981;
+  --yellow:#f59e0b;
+  --red:#ef4444;
+  --r:12px;
+}
+body{
+  font-family:'Nunito',sans-serif;
+  background:var(--bg);
+  background-image:
+    radial-gradient(ellipse at 10% 0%,rgba(99,102,241,0.10) 0%,transparent 55%),
+    radial-gradient(ellipse at 90% 100%,rgba(244,63,142,0.08) 0%,transparent 55%);
+  color:var(--text);
+  min-height:100vh;
+  display:flex;flex-direction:column;
+}
+
+/* ── HEADER ── */
+header{
+  background:var(--surface);
+  border-bottom:2px solid var(--border);
+  padding:12px 28px;
+  display:flex;align-items:center;gap:14px;
+  box-shadow:0 2px 12px rgba(99,102,241,0.08);
+  flex-shrink:0;
+}
+.logo{font-size:1.5rem;}
+.title{
+  font-size:1.4rem;font-weight:900;
+  background:linear-gradient(120deg,var(--accent),var(--pink));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.nav-links{margin-left:auto;display:flex;gap:8px;}
+.nav-link{
+  padding:6px 16px;border-radius:8px;font-weight:800;font-size:0.78rem;
+  text-decoration:none;border:2px solid var(--border);background:var(--bg);
+  color:var(--muted);transition:all 0.15s;
+}
+.nav-link:hover{border-color:var(--accent);color:var(--accent);}
+.nav-link.active{background:rgba(99,102,241,0.1);border-color:var(--accent);color:var(--accent);}
+
+/* ── TABS ── */
+.tabs{
+  display:flex;gap:0;
+  background:var(--surface);
+  border-bottom:2px solid var(--border);
+  padding:0 28px;
+  flex-shrink:0;
+}
+.tab{
+  padding:12px 24px;font-weight:800;font-size:0.85rem;cursor:pointer;
+  border-bottom:3px solid transparent;color:var(--muted);
+  transition:all 0.15s;margin-bottom:-2px;background:none;border-top:none;border-left:none;border-right:none;
+  font-family:'Nunito',sans-serif;
+}
+.tab:hover{color:var(--accent);}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+/* ── CONTENT ── */
+.content{flex:1;padding:24px 28px;display:flex;flex-direction:column;gap:20px;overflow:auto;}
+
+/* ── SECTION TITLE ── */
+.sec-title{
+  font-size:1.05rem;font-weight:900;color:var(--text);
+  display:flex;align-items:center;gap:10px;
+}
+.sec-sub{font-size:0.75rem;color:var(--muted);font-weight:600;margin-top:3px;}
+
+/* ══════════════════════
+   TAB 1 — CODE WALKTHROUGH
+══════════════════════ */
+#tab-code{display:flex;flex-direction:column;gap:18px;}
+
+.code-controls{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+}
+.algo-pills{display:flex;gap:8px;flex-wrap:wrap;}
+.pill{
+  padding:8px 18px;border-radius:99px;font-weight:800;font-size:0.78rem;
+  cursor:pointer;border:2px solid var(--border);background:var(--bg);
+  color:var(--muted);transition:all 0.15s;
+}
+.pill:hover{transform:translateY(-1px);}
+.pill.active{color:#fff;border-color:transparent;box-shadow:0 4px 12px rgba(0,0,0,0.15);}
+
+.code-main{
+  display:grid;
+  grid-template-columns:1fr 380px;
+  gap:16px;
+  min-height:0;
+}
+
+/* Visualizer side */
+.vis-card{
+  background:var(--surface);border:2px solid var(--border);
+  border-radius:var(--r);padding:18px;
+  display:flex;flex-direction:column;gap:14px;
+}
+.vis-card-title{font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);}
+.bars-area{
+  height:160px;display:flex;align-items:flex-end;gap:3px;
+  background:var(--bg);border-radius:8px;padding:8px;
+}
+.bar{flex:1;border-radius:3px 3px 0 0;min-width:3px;transition:height 0.06s,background 0.07s;}
+
+.step-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.sc-btn{
+  padding:7px 16px;font-family:'Nunito',sans-serif;font-weight:800;
+  font-size:0.75rem;border:none;border-radius:8px;cursor:pointer;
+  transition:all 0.15s;text-transform:uppercase;
+}
+.sc-btn-primary{background:var(--accent);color:#fff;}
+.sc-btn-primary:hover{background:#818cf8;}
+.sc-btn-primary:disabled{background:var(--border);color:var(--muted);cursor:not-allowed;}
+.sc-btn-sec{background:var(--bg);border:2px solid var(--border);color:var(--text);}
+.sc-btn-sec:hover{border-color:var(--accent);color:var(--accent);}
+.sc-btn-sec:disabled{opacity:0.4;cursor:not-allowed;}
+
+.step-info{
+  background:var(--bg);border-radius:8px;padding:12px 14px;
+  font-size:0.75rem;font-weight:600;color:var(--muted);line-height:1.6;
+  border-left:4px solid var(--accent);min-height:60px;
+}
+.step-info .highlight{color:var(--text);font-weight:800;}
+
+.stats-row{display:flex;gap:10px;}
+.stat-chip{
+  flex:1;background:var(--bg);border:1.5px solid var(--border);
+  border-radius:8px;padding:8px 10px;text-align:center;
+}
+.stat-chip-label{font-size:0.58rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:800;}
+.stat-chip-val{font-size:1rem;font-weight:900;color:var(--accent);font-family:'JetBrains Mono',monospace;}
+
+/* Code side */
+.code-card{
+  background:#1e1b4b;border:2px solid #312e81;
+  border-radius:var(--r);overflow:hidden;
+  display:flex;flex-direction:column;
+}
+.code-header{
+  background:#312e81;padding:10px 16px;
+  display:flex;align-items:center;gap:10px;
+  font-size:0.72rem;font-weight:800;color:#a5b4fc;
+  letter-spacing:0.05em;text-transform:uppercase;
+  flex-shrink:0;
+}
+.code-dots{display:flex;gap:5px;}
+.code-dot{width:10px;height:10px;border-radius:50%;}
+.code-body{
+  flex:1;overflow-y:auto;padding:14px 0;
+  font-family:'JetBrains Mono',monospace;font-size:0.72rem;line-height:1.8;
+}
+.code-line{
+  display:flex;gap:0;align-items:flex-start;
+  padding:1px 16px;transition:background 0.2s;
+  position:relative;
+}
+.code-line.active{
+  background:rgba(99,102,241,0.25) !important;
+  border-left:3px solid #818cf8;
+  padding-left:13px;
+}
+.code-line.active::before{
+  content:'▶';
+  position:absolute;right:8px;
+  color:#818cf8;font-size:0.65rem;
+  top:50%;transform:translateY(-50%);
+}
+.code-line:hover{background:rgba(255,255,255,0.04);}
+.ln{
+  color:#4c4889;min-width:28px;text-align:right;
+  padding-right:12px;user-select:none;flex-shrink:0;font-size:0.65rem;
+  padding-top:1px;
+}
+.code-line.active .ln{color:#818cf8;}
+.code-text{color:#c7d2fe;white-space:pre;}
+/* Syntax colours */
+.kw{color:#a78bfa;}   /* keyword */
+.fn{color:#67e8f9;}   /* function */
+.cm{color:#6b7280;font-style:italic;} /* comment */
+.st{color:#86efac;}   /* string */
+.nm{color:#fbbf24;}   /* number/var */
+.op{color:#f9a8d4;}   /* operator */
+.tooltip{
+  position:absolute;left:100%;top:50%;transform:translateY(-50%);
+  background:#312e81;color:#c7d2fe;font-size:0.65rem;font-family:'Nunito',sans-serif;
+  padding:5px 10px;border-radius:6px;white-space:nowrap;z-index:10;
+  pointer-events:none;opacity:0;transition:opacity 0.15s;
+  border:1px solid #4c4889;margin-left:6px;
+}
+.code-line.active .tooltip{opacity:1;}
+
+/* Progress track */
+.code-progress{height:3px;background:#312e81;}
+.code-progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--pink));transition:width 0.1s;}
+
+/* Speed */
+.speed-row{display:flex;align-items:center;gap:8px;margin-left:auto;}
+.speed-lbl{font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);}
+input[type=range]{accent-color:var(--accent);cursor:pointer;width:80px;}
+.speed-val{font-size:0.75rem;font-weight:800;color:var(--accent);font-family:'JetBrains Mono',monospace;min-width:16px;}
+
+/* ══════════════════════
+   TAB 2 — COMPARE
+══════════════════════ */
+#tab-compare{display:none;flex-direction:column;gap:18px;}
+
+.compare-pickers{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;}
+.picker-group{display:flex;flex-direction:column;gap:6px;}
+.picker-label{font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);}
+.picker-pills{display:flex;gap:6px;flex-wrap:wrap;}
+.ppill{
+  padding:6px 14px;border-radius:99px;font-weight:800;font-size:0.72rem;
+  cursor:pointer;border:2px solid var(--border);background:var(--bg);
+  color:var(--muted);transition:all 0.15s;
+}
+.ppill:hover{transform:translateY(-1px);}
+.ppill.selA.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.ppill.selB.active{background:var(--pink);color:#fff;border-color:var(--pink);}
+
+.cmp-run-btn{
+  padding:9px 22px;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.82rem;
+  border:none;border-radius:10px;cursor:pointer;
+  background:linear-gradient(135deg,var(--accent),var(--pink));
+  color:#fff;box-shadow:0 4px 14px rgba(99,102,241,0.3);transition:all 0.15s;
+}
+.cmp-run-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(99,102,241,0.4);}
+.cmp-run-btn:disabled{background:var(--border);color:var(--muted);box-shadow:none;transform:none;cursor:not-allowed;}
+
+.compare-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:16px;
+}
+.cmp-card{
+  background:var(--surface);border:2px solid var(--border);
+  border-radius:var(--r);padding:16px;
+  display:flex;flex-direction:column;gap:12px;
+}
+.cmp-card-header{display:flex;align-items:center;gap:10px;}
+.cmp-dot{width:12px;height:12px;border-radius:4px;}
+.cmp-name{font-size:0.9rem;font-weight:900;}
+.cmp-complexity{font-size:0.62rem;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+.cmp-bars{
+  height:130px;display:flex;align-items:flex-end;gap:2px;
+  background:var(--bg);border-radius:8px;padding:6px;
+}
+.cmp-stats{display:flex;gap:8px;}
+.cmp-stat{
+  flex:1;background:var(--bg);border:1.5px solid var(--border);
+  border-radius:8px;padding:8px;text-align:center;
+}
+.cmp-stat-lbl{font-size:0.58rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);font-weight:800;}
+.cmp-stat-val{font-size:0.92rem;font-weight:900;font-family:'JetBrains Mono',monospace;}
+.cmp-progress{height:4px;background:#eee;border-radius:99px;overflow:hidden;}
+.cmp-progress-fill{height:100%;border-radius:99px;transition:width 0.1s;width:0%;}
+.cmp-status{font-size:0.72rem;font-weight:800;color:var(--muted);}
+
+/* Winner banner */
+.winner-banner{
+  text-align:center;padding:14px;
+  background:linear-gradient(135deg,rgba(255,215,0,0.15),rgba(255,165,0,0.10));
+  border:2px solid gold;border-radius:var(--r);
+  font-size:1rem;font-weight:900;color:#92400e;
+  display:none;
+}
+
+/* Chart comparison */
+.chart-wrap{
+  background:var(--surface);border:2px solid var(--border);
+  border-radius:var(--r);padding:16px;
+}
+.chart-title{font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;}
+#cmp-chart{width:100%;height:140px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🔍</div>
+  <div class="title">SortViz Explorer</div>
+  <div class="nav-links">
+    <a href="/" class="nav-link">🏎️ Race Mode</a>
+    <a href="/explore" class="nav-link active">🔍 Code Explorer</a>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('code')">📄 Code Walkthrough</button>
+  <button class="tab" onclick="switchTab('compare')">⚖️ Compare Algorithms</button>
+</div>
+
+<div class="content">
+
+  <!-- ══ TAB 1: CODE WALKTHROUGH ══ -->
+  <div id="tab-code">
+    <div>
+      <div class="sec-title">📄 Code Walkthrough</div>
+      <div class="sec-sub">Choose an algorithm, then step through the code line by line and watch exactly what happens.</div>
+    </div>
+
+    <div class="code-controls">
+      <div class="algo-pills" id="code-pills"></div>
+      <div class="speed-row">
+        <span class="speed-lbl">Speed</span>
+        <input type="range" id="code-speed" min="1" max="10" value="5"/>
+        <span class="speed-val" id="code-speed-v">5</span>
+      </div>
+    </div>
+
+    <div class="code-main">
+      <!-- LEFT: visualizer -->
+      <div class="vis-card">
+        <div class="vis-card-title">📊 Array Visualization</div>
+        <div class="bars-area" id="code-bars"></div>
+
+        <div class="step-controls">
+          <button class="sc-btn sc-btn-sec" id="btn-gen-code">↺ New Array</button>
+          <button class="sc-btn sc-btn-primary" id="btn-play">▶ Play</button>
+          <button class="sc-btn sc-btn-sec" id="btn-prev" disabled>‹ Prev</button>
+          <button class="sc-btn sc-btn-sec" id="btn-next" disabled>Next ›</button>
+          <button class="sc-btn sc-btn-sec" id="btn-stop-code" disabled>■ Stop</button>
+        </div>
+
+        <div class="step-info" id="step-explain">
+          Press <strong>▶ Play</strong> to start, or use <strong>Next ›</strong> to go step by step.
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-chip">
+            <div class="stat-chip-label">Comparisons</div>
+            <div class="stat-chip-val" id="code-cmp">0</div>
+          </div>
+          <div class="stat-chip">
+            <div class="stat-chip-label">Swaps</div>
+            <div class="stat-chip-val" id="code-swp">0</div>
+          </div>
+          <div class="stat-chip">
+            <div class="stat-chip-label">Step</div>
+            <div class="stat-chip-val" id="code-step">0 / 0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: code -->
+      <div class="code-card">
+        <div class="code-header">
+          <div class="code-dots">
+            <div class="code-dot" style="background:#ef4444"></div>
+            <div class="code-dot" style="background:#f59e0b"></div>
+            <div class="code-dot" style="background:#10b981"></div>
+          </div>
+          <span id="code-filename">bubble_sort.py</span>
+        </div>
+        <div class="code-progress">
+          <div class="code-progress-fill" id="code-prog"></div>
+        </div>
+        <div class="code-body" id="code-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TAB 2: COMPARE ══ -->
+  <div id="tab-compare">
+    <div>
+      <div class="sec-title">⚖️ Compare Algorithms</div>
+      <div class="sec-sub">Pick two algorithms and race them on the same array. See which wins and why.</div>
+    </div>
+
+    <div class="compare-pickers">
+      <div class="picker-group">
+        <div class="picker-label" style="color:var(--accent)">🔵 Algorithm A</div>
+        <div class="picker-pills" id="pills-A"></div>
+      </div>
+      <div class="picker-group">
+        <div class="picker-label" style="color:var(--pink)">🔴 Algorithm B</div>
+        <div class="picker-pills" id="pills-B"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div class="picker-label">Array Size</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input type="range" id="cmp-size" min="8" max="40" value="18"/>
+          <span class="speed-val" id="cmp-size-v">18</span>
+        </div>
+      </div>
+      <button class="cmp-run-btn" id="cmp-run-btn">▶ Run Comparison</button>
+    </div>
+
+    <div class="winner-banner" id="winner-banner"></div>
+
+    <div class="compare-grid">
+      <div class="cmp-card" id="cmp-card-A">
+        <div class="cmp-card-header">
+          <div class="cmp-dot" style="background:var(--accent)"></div>
+          <span class="cmp-name" style="color:var(--accent)" id="cmp-name-A">Bubble Sort</span>
+          <span class="cmp-complexity" id="cmp-cx-A">O(n²)</span>
+          <span class="cmp-status" id="cmp-st-A" style="margin-left:auto">Ready</span>
+        </div>
+        <div class="cmp-bars" id="cmp-bars-A"></div>
+        <div class="cmp-progress"><div class="cmp-progress-fill" id="cmp-pb-A" style="background:var(--accent)"></div></div>
+        <div class="cmp-stats">
+          <div class="cmp-stat"><div class="cmp-stat-lbl">Comparisons</div><div class="cmp-stat-val" id="cmp-cmp-A" style="color:var(--accent)">0</div></div>
+          <div class="cmp-stat"><div class="cmp-stat-lbl">Swaps</div><div class="cmp-stat-val" id="cmp-swp-A" style="color:var(--accent)">0</div></div>
+          <div class="cmp-stat"><div class="cmp-stat-lbl">Time (ms)</div><div class="cmp-stat-val" id="cmp-time-A" style="color:var(--accent)">—</div></div>
+        </div>
+      </div>
+
+      <div class="cmp-card" id="cmp-card-B">
+        <div class="cmp-card-header">
+          <div class="cmp-dot" style="background:var(--pink)"></div>
+          <span class="cmp-name" style="color:var(--pink)" id="cmp-name-B">Quick Sort</span>
+          <span class="cmp-complexity" id="cmp-cx-B">O(n log n)</span>
+          <span class="cmp-status" id="cmp-st-B" style="margin-left:auto">Ready</span>
+        </div>
+        <div class="cmp-bars" id="cmp-bars-B"></div>
+        <div class="cmp-progress"><div class="cmp-progress-fill" id="cmp-pb-B" style="background:var(--pink)"></div></div>
+        <div class="cmp-stats">
+          <div class="cmp-stat"><div class="cmp-stat-lbl">Comparisons</div><div class="cmp-stat-val" id="cmp-cmp-B" style="color:var(--pink)">0</div></div>
+          <div class="cmp-stat"><div class="cmp-stat-lbl">Swaps</div><div class="cmp-stat-val" id="cmp-swp-B" style="color:var(--pink)">0</div></div>
+          <div class="cmp-stat"><div class="cmp-stat-lbl">Time (ms)</div><div class="cmp-stat-val" id="cmp-time-B" style="color:var(--pink)">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-wrap">
+      <div class="chart-title">📈 Comparison Count Over Time</div>
+      <canvas id="cmp-chart"></canvas>
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<script>
+/* ═══════════════════════════════════════
+   DATA
+═══════════════════════════════════════ */
+const ALGOS = [
+  {
+    key:"bubble", name:"Bubble Sort", emoji:"🫧", color:"#6366f1", complexity:"O(n²)",
+    filename:"bubble_sort.py",
+    code:[
+      {t:"<span class='kw'>def</span> <span class='fn'>bubble_sort</span>(arr):", l:"Define the function — takes a list as input", active:false},
+      {t:"    n = <span class='fn'>len</span>(arr)", l:"Get the length of the array", active:false},
+      {t:"    <span class='kw'>for</span> i <span class='kw'>in</span> <span class='fn'>range</span>(n):", l:"Outer loop — n passes total", active:false},
+      {t:"        <span class='kw'>for</span> j <span class='kw'>in</span> <span class='fn'>range</span>(<span class='nm'>0</span>, n<span class='op'>-</span>i<span class='op'>-</span><span class='nm'>1</span>):", l:"Inner loop — shrinks each pass (sorted end grows)", active:false},
+      {t:"            <span class='kw'>if</span> arr[j] <span class='op'>></span> arr[j<span class='op'>+</span><span class='nm'>1</span>]:", l:"🔍 COMPARE: is left element bigger than right?", active:false},
+      {t:"                arr[j], arr[j<span class='op'>+</span><span class='nm'>1</span>] <span class='op'>=</span> arr[j<span class='op'>+</span><span class='nm'>1</span>], arr[j]", l:"🔄 SWAP: yes! swap them — bubble the bigger one up", active:false},
+      {t:"    <span class='kw'>return</span> arr", l:"Array is fully sorted — return it ✅", active:false},
+      {t:"", l:"", active:false},
+      {t:"<span class='cm'># Each pass moves the largest unsorted</span>", l:"", active:false},
+      {t:"<span class='cm'># element to its final position 🫧</span>", l:"", active:false},
+    ]
+  },
+  {
+    key:"selection", name:"Selection Sort", emoji:"🎯", color:"#f43f8e", complexity:"O(n²)",
+    filename:"selection_sort.py",
+    code:[
+      {t:"<span class='kw'>def</span> <span class='fn'>selection_sort</span>(arr):", l:"Define the function", active:false},
+      {t:"    n = <span class='fn'>len</span>(arr)", l:"Get length of array", active:false},
+      {t:"    <span class='kw'>for</span> i <span class='kw'>in</span> <span class='fn'>range</span>(n):", l:"Each iteration places one element correctly", active:false},
+      {t:"        min_idx = i", l:"🎯 Assume the current position has the minimum", active:false},
+      {t:"        <span class='kw'>for</span> j <span class='kw'>in</span> <span class='fn'>range</span>(i<span class='op'>+</span><span class='nm'>1</span>, n):", l:"Scan the rest of the unsorted array", active:false},
+      {t:"            <span class='kw'>if</span> arr[j] <span class='op'><</span> arr[min_idx]:", l:"🔍 COMPARE: found something smaller?", active:false},
+      {t:"                min_idx = j", l:"Update our minimum index tracker", active:false},
+      {t:"        arr[i], arr[min_idx] <span class='op'>=</span> arr[min_idx], arr[i]", l:"🔄 SWAP: place minimum into correct position", active:false},
+      {t:"    <span class='kw'>return</span> arr", l:"Done! Every element is in its place ✅", active:false},
+      {t:"", l:"", active:false},
+      {t:"<span class='cm'># Makes only O(n) swaps — great when</span>", l:"", active:false},
+      {t:"<span class='cm'># swapping is expensive 🎯</span>", l:"", active:false},
+    ]
+  },
+  {
+    key:"insertion", name:"Insertion Sort", emoji:"📌", color:"#f59e0b", complexity:"O(n²)",
+    filename:"insertion_sort.py",
+    code:[
+      {t:"<span class='kw'>def</span> <span class='fn'>insertion_sort</span>(arr):", l:"Define the function", active:false},
+      {t:"    <span class='kw'>for</span> i <span class='kw'>in</span> <span class='fn'>range</span>(<span class='nm'>1</span>, <span class='fn'>len</span>(arr)):", l:"Start from index 1 — first element is 'sorted'", active:false},
+      {t:"        key = arr[i]", l:"📌 Pick up the current element to insert", active:false},
+      {t:"        j = i <span class='op'>-</span> <span class='nm'>1</span>", l:"Start comparing with elements before it", active:false},
+      {t:"        <span class='kw'>while</span> j <span class='op'>>=</span> <span class='nm'>0</span> <span class='kw'>and</span> arr[j] <span class='op'>></span> key:", l:"🔍 COMPARE: is left element bigger than our key?", active:false},
+      {t:"            arr[j<span class='op'>+</span><span class='nm'>1</span>] = arr[j]", l:"🔄 SHIFT: move the bigger element one step right", active:false},
+      {t:"            j <span class='op'>-=</span> <span class='nm'>1</span>", l:"Move pointer left to keep comparing", active:false},
+      {t:"        arr[j<span class='op'>+</span><span class='nm'>1</span>] = key", l:"✅ Drop the key into its correct slot", active:false},
+      {t:"    <span class='kw'>return</span> arr", l:"Array fully sorted ✅", active:false},
+      {t:"", l:"", active:false},
+      {t:"<span class='cm'># Like sorting playing cards in your hand 📌</span>", l:"", active:false},
+    ]
+  },
+  {
+    key:"merge", name:"Merge Sort", emoji:"🔀", color:"#10b981", complexity:"O(n log n)",
+    filename:"merge_sort.py",
+    code:[
+      {t:"<span class='kw'>def</span> <span class='fn'>merge_sort</span>(arr):", l:"Main function — divide and conquer", active:false},
+      {t:"    <span class='kw'>if</span> <span class='fn'>len</span>(arr) <span class='op'><=</span> <span class='nm'>1</span>:", l:"Base case — a single element is already sorted", active:false},
+      {t:"        <span class='kw'>return</span> arr", l:"Return immediately ✅", active:false},
+      {t:"    mid = <span class='fn'>len</span>(arr) <span class='op'>//</span> <span class='nm'>2</span>", l:"🔀 Find the middle to split the array", active:false},
+      {t:"    L = <span class='fn'>merge_sort</span>(arr[:mid])", l:"Recursively sort the LEFT half", active:false},
+      {t:"    R = <span class='fn'>merge_sort</span>(arr[mid:])", l:"Recursively sort the RIGHT half", active:false},
+      {t:"    <span class='kw'>return</span> <span class='fn'>merge</span>(L, R)", l:"Merge the two sorted halves together", active:false},
+      {t:"", l:"", active:false},
+      {t:"<span class='kw'>def</span> <span class='fn'>merge</span>(L, R):", l:"Merge two sorted lists into one", active:false},
+      {t:"    result, i, j = [], <span class='nm'>0</span>, <span class='nm'>0</span>", l:"Start from the beginning of both lists", active:false},
+      {t:"    <span class='kw'>while</span> i <span class='op'><</span> <span class='fn'>len</span>(L) <span class='kw'>and</span> j <span class='op'><</span> <span class='fn'>len</span>(R):", l:"🔍 COMPARE elements from both halves", active:false},
+      {t:"        <span class='kw'>if</span> L[i] <span class='op'><=</span> R[j]:", l:"Left element is smaller or equal?", active:false},
+      {t:"            result.append(L[i]); i<span class='op'>+=</span><span class='nm'>1</span>", l:"✅ Take from left half", active:false},
+      {t:"        <span class='kw'>else</span>:", l:"Right element is smaller", active:false},
+      {t:"            result.append(R[j]); j<span class='op'>+=</span><span class='nm'>1</span>", l:"✅ Take from right half", active:false},
+      {t:"    <span class='kw'>return</span> result + L[i:] + R[j:]", l:"Append any remaining elements", active:false},
+    ]
+  },
+  {
+    key:"quick", name:"Quick Sort", emoji:"⚡", color:"#ef4444", complexity:"O(n log n)",
+    filename:"quick_sort.py",
+    code:[
+      {t:"<span class='kw'>def</span> <span class='fn'>quick_sort</span>(arr, lo, hi):", l:"Main function — lo/hi define the current range", active:false},
+      {t:"    <span class='kw'>if</span> lo <span class='op'><</span> hi:", l:"Only sort if there's more than one element", active:false},
+      {t:"        p = <span class='fn'>partition</span>(arr, lo, hi)", l:"⚡ Partition and get pivot's final position", active:false},
+      {t:"        <span class='fn'>quick_sort</span>(arr, lo, p<span class='op'>-</span><span class='nm'>1</span>)", l:"Recursively sort LEFT of pivot", active:false},
+      {t:"        <span class='fn'>quick_sort</span>(arr, p<span class='op'>+</span><span class='nm'>1</span>, hi)", l:"Recursively sort RIGHT of pivot", active:false},
+      {t:"", l:"", active:false},
+      {t:"<span class='kw'>def</span> <span class='fn'>partition</span>(arr, lo, hi):", l:"Put pivot in correct place, smaller left, bigger right", active:false},
+      {t:"    pivot = arr[hi]", l:"⚡ Choose last element as pivot", active:false},
+      {t:"    i = lo <span class='op'>-</span> <span class='nm'>1</span>", l:"i tracks the boundary of 'smaller than pivot'", active:false},
+      {t:"    <span class='kw'>for</span> j <span class='kw'>in</span> <span class='fn'>range</span>(lo, hi):", l:"Scan all elements in range", active:false},
+      {t:"        <span class='kw'>if</span> arr[j] <span class='op'><=</span> pivot:", l:"🔍 COMPARE: is this element ≤ pivot?", active:false},
+      {t:"            i<span class='op'>+=</span><span class='nm'>1</span>; arr[i],arr[j] = arr[j],arr[i]", l:"🔄 SWAP: move it to the left partition", active:false},
+      {t:"    arr[i<span class='op'>+</span><span class='nm'>1</span>], arr[hi] = arr[hi], arr[i<span class='op'>+</span><span class='nm'>1</span>]", l:"Place pivot in its final correct position ✅", active:false},
+      {t:"    <span class='kw'>return</span> i <span class='op'>+</span> <span class='nm'>1</span>", l:"Return pivot's index for recursion", active:false},
+    ]
+  },
+];
+
+/* ═══════════════════════════════════════
+   TAB SWITCHING
+═══════════════════════════════════════ */
+function switchTab(t) {
+  document.getElementById("tab-code").style.display    = t==="code"    ? "flex" : "none";
+  document.getElementById("tab-compare").style.display = t==="compare" ? "flex" : "none";
+  document.querySelectorAll(".tab").forEach((el,i) => {
+    el.classList.toggle("active", (i===0&&t==="code")||(i===1&&t==="compare"));
+  });
+}
+switchTab("code");
+
+/* ═══════════════════════════════════════
+   CODE WALKTHROUGH — state
+═══════════════════════════════════════ */
+let codeAlgo  = ALGOS[0];
+let codeArr   = [];
+let codeSteps = [];
+let codeIdx   = 0;
+let codePlaying = false;
+let codeStop  = false;
+
+/* Build algo pills for code tab */
+const codePillsEl = document.getElementById("code-pills");
+ALGOS.forEach(a => {
+  const p = document.createElement("button");
+  p.className = "pill" + (a.key==="bubble"?" active":"");
+  p.style.setProperty("background", a.key==="bubble" ? a.color : "");
+  p.style.setProperty("color", a.key==="bubble" ? "#fff" : "");
+  p.style.setProperty("border-color", a.key==="bubble" ? a.color : "");
+  p.innerHTML = `${a.emoji} ${a.name}`;
+  p.onclick = () => selectCodeAlgo(a, p);
+  codePillsEl.appendChild(p);
+});
+
+function selectCodeAlgo(a, btn) {
+  codeStop = true; codePlaying = false;
+  codeAlgo = a;
+  document.querySelectorAll("#code-pills .pill").forEach(p => {
+    p.classList.remove("active");
+    p.style.background=""; p.style.color=""; p.style.borderColor="";
+  });
+  btn.classList.add("active");
+  btn.style.background = a.color;
+  btn.style.color = "#fff";
+  btn.style.borderColor = a.color;
+  renderCodeBlock();
+  resetCodeStep();
+  if (codeArr.length) drawCodeBars(codeArr, null, a.color);
+  setStepBtns(false);
+}
+
+function renderCodeBlock() {
+  const body = document.getElementById("code-body");
+  document.getElementById("code-filename").textContent = codeAlgo.filename;
+  body.innerHTML = codeAlgo.code.map((line, i) => `
+    <div class="code-line" id="cl-${i}">
+      <span class="ln">${line.t ? i+1 : ""}</span>
+      <span class="code-text">${line.t}</span>
+      ${line.l ? `<div class="tooltip">${line.l}</div>` : ""}
+    </div>`
+  ).join("");
+}
+
+function highlightLine(lineIdx) {
+  document.querySelectorAll(".code-line").forEach(el => el.classList.remove("active"));
+  if (lineIdx == null) return;
+  const el = document.getElementById(`cl-${lineIdx}`);
+  if (el) {
+    el.classList.add("active");
+    el.scrollIntoView({block:"nearest",behavior:"smooth"});
+  }
+}
+
+/* Map step → code line index */
+function stepToLine(step) {
+  const k = codeAlgo.key;
+  if (!step) return null;
+  if (step.done) return k==="bubble"?6:k==="selection"?8:k==="insertion"?8:k==="merge"?15:k==="quick"?13:null;
+  if (step.swapped) {
+    if (k==="bubble")    return 5;
+    if (k==="selection") return 7;
+    if (k==="insertion") return 5;
+    if (k==="merge")     return 14;
+    if (k==="quick")     return 11;
+  }
+  if (step.comparing?.length) {
+    if (k==="bubble")    return 4;
+    if (k==="selection") return 5;
+    if (k==="insertion") return 4;
+    if (k==="merge")     return 10;
+    if (k==="quick")     return 10;
+  }
+  return null;
+}
+
+function stepExplain(step) {
+  if (!step) return "Ready to start!";
+  const k = codeAlgo.key;
+  if (step.done) return `<span class="highlight">✅ Sorting complete!</span> Total: ${step.comparisons} comparisons, ${step.swaps} swaps.`;
+  if (step.swapped && step.comparing?.length) {
+    const [a,b] = step.comparing;
+    const v1 = step.array[a], v2 = step.array[b];
+    return `<span class="highlight">🔄 Swap!</span> Swapping <span class="highlight">${v1}</span> and <span class="highlight">${v2}</span> at positions ${a} & ${b}.`;
+  }
+  if (step.comparing?.length) {
+    const [a,b] = step.comparing;
+    const v1 = step.array[a], v2 = step.array[b];
+    return `<span class="highlight">🔍 Compare</span> position ${a} (value <span class="highlight">${v1}</span>) with position ${b} (value <span class="highlight">${v2}</span>). Is ${v1} > ${v2}? <span class="highlight">${v1>v2?"Yes → will swap!":"No → move on."}</span>`;
+  }
+  return "Processing...";
+}
+
+/* Draw bars for code tab */
+function drawCodeBars(arr, step, color) {
+  const wrap = document.getElementById("code-bars");
+  const max  = Math.max(...arr);
+  const h    = wrap.clientHeight - 16;
+  const cmp  = new Set(step?.comparing||[]);
+  const srt  = new Set(step?.sorted_indices||[]);
+
+  if (wrap.children.length !== arr.length) {
+    wrap.innerHTML = arr.map(()=>`<div class="bar"></div>`).join("");
+  }
+  [...wrap.children].forEach((bar,i) => {
+    bar.style.height = Math.max(4, Math.round((arr[i]/max)*h)) + "px";
+    if (step?.done) bar.style.background = color;
+    else if (cmp.has(i)) bar.style.background = step?.swapped ? "#a855f7" : "#fb7185";
+    else if (srt.has(i)) bar.style.background = color+"bb";
+    else bar.style.background = color+"44";
+  });
+}
+
+function resetCodeStep() {
+  codeIdx = 0; codeSteps = [];
+  document.getElementById("code-cmp").textContent = "0";
+  document.getElementById("code-swp").textContent = "0";
+  document.getElementById("code-step").textContent = "0 / 0";
+  document.getElementById("code-prog").style.width = "0%";
+  document.getElementById("step-explain").innerHTML = 'Press <strong>▶ Play</strong> to start, or use <strong>Next ›</strong> to step manually.';
+  highlightLine(null);
+}
+
+function applyStep(idx) {
+  if (!codeSteps.length) return;
+  const step = codeSteps[idx];
+  drawCodeBars(step.array, step, codeAlgo.color);
+  highlightLine(stepToLine(step));
+  document.getElementById("step-explain").innerHTML = stepExplain(step);
+  document.getElementById("code-cmp").textContent  = step.comparisons||0;
+  document.getElementById("code-swp").textContent  = step.swaps||0;
+  document.getElementById("code-step").textContent = `${idx+1} / ${codeSteps.length}`;
+  document.getElementById("code-prog").style.width = `${((idx+1)/codeSteps.length)*100}%`;
+  document.getElementById("btn-prev").disabled = idx === 0;
+  document.getElementById("btn-next").disabled = idx >= codeSteps.length-1;
+}
+
+function setStepBtns(hasSteps) {
+  document.getElementById("btn-prev").disabled = !hasSteps || codeIdx===0;
+  document.getElementById("btn-next").disabled = !hasSteps || codeIdx>=codeSteps.length-1;
+  document.getElementById("btn-stop-code").disabled = !codePlaying;
+}
+
+async function fetchCodeSteps() {
+  const res  = await fetch("/sort", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({algorithm: codeAlgo.key, array: codeArr})
+  });
+  const data = await res.json();
+  return data.steps;
+}
+
+async function playCode() {
+  if (!codeArr.length) await genCodeArr();
+  if (!codeSteps.length) {
+    codeSteps = await fetchCodeSteps();
+    codeIdx = 0;
+  }
+  codePlaying = true; codeStop = false;
+  document.getElementById("btn-play").disabled = true;
+  document.getElementById("btn-stop-code").disabled = false;
+
+  while (codeIdx < codeSteps.length && !codeStop) {
+    applyStep(codeIdx);
+    const spd = +document.getElementById("code-speed").value;
+    await new Promise(r => setTimeout(r, Math.round(510 - spd*50)));
+    codeIdx++;
+  }
+  codeIdx = Math.min(codeIdx, codeSteps.length-1);
+  codePlaying = false;
+  document.getElementById("btn-play").disabled = false;
+  document.getElementById("btn-stop-code").disabled = true;
+  setStepBtns(true);
+}
+
+async function genCodeArr() {
+  const res  = await fetch("/generate?size=16&order=random");
+  const data = await res.json();
+  codeArr   = data.array;
+  codeSteps = [];
+  codeIdx   = 0;
+  drawCodeBars(codeArr, null, codeAlgo.color);
+  resetCodeStep();
+  setStepBtns(false);
+}
+
+document.getElementById("btn-gen-code").onclick = genCodeArr;
+document.getElementById("btn-play").onclick = playCode;
+document.getElementById("btn-stop-code").onclick = () => {
+  codeStop = true; codePlaying = false;
+  document.getElementById("btn-play").disabled = false;
+  document.getElementById("btn-stop-code").disabled = true;
+  setStepBtns(codeSteps.length>0);
+};
+document.getElementById("btn-prev").onclick = () => {
+  if (codeIdx > 0) { codeIdx--; applyStep(codeIdx); }
+};
+document.getElementById("btn-next").onclick = async () => {
+  if (!codeSteps.length) {
+    codeSteps = await fetchCodeSteps(); codeIdx = 0;
+  }
+  if (codeIdx < codeSteps.length-1) { codeIdx++; applyStep(codeIdx); }
+  setStepBtns(true);
+};
+document.getElementById("code-speed").oninput = e =>
+  document.getElementById("code-speed-v").textContent = e.target.value;
+
+/* ═══════════════════════════════════════
+   COMPARE TAB
+═══════════════════════════════════════ */
+let selA = "bubble", selB = "quick"; // A=bubble, B=quick by default
+let cmpStopFlag = false;
+
+// Build A/B pickers — A defaults to bubble, B defaults to quick
+["A","B"].forEach(side => {
+  const el = document.getElementById(`pills-${side}`);
+  const defaultKey = side==="A" ? "bubble" : "quick";
+  ALGOS.forEach(a => {
+    const p = document.createElement("button");
+    p.className = `ppill sel${side}`;
+    if (a.key === defaultKey) p.classList.add("active");
+    p.innerHTML = `${a.emoji} ${a.name}`;
+    p.onclick = () => {
+      document.querySelectorAll(`.sel${side}`).forEach(x=>x.classList.remove("active"));
+      p.classList.add("active");
+      if (side==="A") { selA=a.key; updateCmpHeader("A",a); }
+      else            { selB=a.key; updateCmpHeader("B",a); }
+    };
+    el.appendChild(p);
+  });
+  // apply default header immediately
+  const defAlgo = ALGOS.find(a=>a.key===defaultKey);
+  if (defAlgo) updateCmpHeader(side, defAlgo);
+});
+
+function updateCmpHeader(side, a) {
+  document.getElementById(`cmp-name-${side}`).textContent = a.name;
+  document.getElementById(`cmp-cx-${side}`).textContent   = a.complexity;
+  document.getElementById(`cmp-name-${side}`).style.color = side==="A"?"var(--accent)":"var(--pink)";
+}
+
+document.getElementById("cmp-size").oninput = e =>
+  document.getElementById("cmp-size-v").textContent = e.target.value;
+
+function drawCmpBars(side, arr, step, color) {
+  const wrap = document.getElementById(`cmp-bars-${side}`);
+  if (!wrap||!arr||!arr.length) return;
+  const max = Math.max(...arr);
+  const h   = wrap.clientHeight - 12;
+  const cmp = new Set(step?.comparing||[]);
+  const srt = new Set(step?.sorted_indices||[]);
+
+  if (wrap.children.length !== arr.length)
+    wrap.innerHTML = arr.map(()=>`<div class="bar"></div>`).join("");
+
+  [...wrap.children].forEach((bar,i) => {
+    bar.style.height = Math.max(3,Math.round((arr[i]/max)*h))+"px";
+    if (step?.done) bar.style.background = color;
+    else if (cmp.has(i)) bar.style.background = step?.swapped?"#a855f7":"#fb7185";
+    else if (srt.has(i)) bar.style.background = color+"bb";
+    else bar.style.background = color+"44";
+  });
+}
+
+async function runCompare() {
+  // Block same-algorithm comparison
+  if (selA === selB) {
+    // shake the run button
+    const btn2 = document.getElementById("cmp-run-btn");
+    btn2.style.transition = "transform 0.1s";
+    [0,1,2,3,4,5].forEach(i =>
+      setTimeout(() => btn2.style.transform = i%2===0?"translateX(-6px)":"translateX(6px)", i*80)
+    );
+    setTimeout(() => btn2.style.transform = "", 480);
+
+    // show alert banner
+    const banner = document.getElementById("winner-banner");
+    banner.style.display = "block";
+    banner.style.background = "rgba(239,68,68,0.1)";
+    banner.style.borderColor = "#ef4444";
+    banner.style.color = "#b91c1c";
+    banner.innerHTML = "⛔ You picked the same algorithm on both sides! Please choose <strong>two different</strong> algorithms to compare.";
+    return;
+  }
+  // hide any previous alert
+  document.getElementById("winner-banner").style.display = "none";
+  const size = +document.getElementById("cmp-size").value;
+  const btn  = document.getElementById("cmp-run-btn");
+  btn.disabled = true;
+  cmpStopFlag = false;
+
+  // reset
+  document.getElementById("winner-banner").style.display = "none";
+  ["A","B"].forEach(s => {
+    document.getElementById(`cmp-pb-${s}`).style.width = "0%";
+    document.getElementById(`cmp-cmp-${s}`).textContent = "0";
+    document.getElementById(`cmp-swp-${s}`).textContent = "0";
+    document.getElementById(`cmp-time-${s}`).textContent = "—";
+    document.getElementById(`cmp-st-${s}`).textContent = "Running...";
+    document.getElementById(`cmp-card-${s}`).style.borderColor = "";
+  });
+
+  // fetch shared array
+  const genRes = await fetch(`/generate?size=${size}&order=random`);
+  const genData = await genRes.json();
+  const arr = genData.array;
+
+  // init bars
+  ["A","B"].forEach(s => {
+    const color = s==="A"?"#6366f1":"#f43f8e";
+    drawCmpBars(s, arr, null, color);
+  });
+
+  // fetch both algo steps
+  const algoA = ALGOS.find(a=>a.key===selA);
+  const algoB = ALGOS.find(a=>a.key===selB);
+
+  const [resA, resB] = await Promise.all([
+    fetch("/sort",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({algorithm:selA,array:arr})}),
+    fetch("/sort",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({algorithm:selB,array:arr})}),
+  ]);
+  const [dA, dB] = await Promise.all([resA.json(), resB.json()]);
+  const stepsA = dA.steps, stepsB = dB.steps;
+
+  document.getElementById("cmp-time-A").textContent = dA.elapsed_ms+"ms";
+  document.getElementById("cmp-time-B").textContent = dB.elapsed_ms+"ms";
+
+  const maxS = Math.max(stepsA.length, stepsB.length);
+
+  // graph data
+  const graphA = [], graphB = [];
+  const GPTS = 80;
+
+  let finishedA=false, finishedB=false, winner=null;
+
+  for (let f=0; f<maxS; f++) {
+    const iA = Math.min(f, stepsA.length-1);
+    const iB = Math.min(f, stepsB.length-1);
+    const sA = stepsA[iA], sB = stepsB[iB];
+
+    drawCmpBars("A", sA.array, sA, "#6366f1");
+    drawCmpBars("B", sB.array, sB, "#f43f8e");
+
+    document.getElementById("cmp-cmp-A").textContent = sA.comparisons||0;
+    document.getElementById("cmp-swp-A").textContent = sA.swaps||0;
+    document.getElementById("cmp-cmp-B").textContent = sB.comparisons||0;
+    document.getElementById("cmp-swp-B").textContent = sB.swaps||0;
+
+    document.getElementById("cmp-pb-A").style.width = `${(iA/(stepsA.length-1))*100}%`;
+    document.getElementById("cmp-pb-B").style.width = `${(iB/(stepsB.length-1))*100}%`;
+
+    if (sA.done && !finishedA) {
+      finishedA=true;
+      document.getElementById("cmp-st-A").textContent="✅ Done!";
+      if (!winner) winner="A";
+    }
+    if (sB.done && !finishedB) {
+      finishedB=true;
+      document.getElementById("cmp-st-B").textContent="✅ Done!";
+      if (!winner) winner="B";
+    }
+
+    // graph sampling
+    const gi = Math.min(Math.floor((f/maxS)*GPTS), GPTS-1);
+    graphA[gi] = sA.comparisons||0;
+    graphB[gi] = sB.comparisons||0;
+
+    drawCmpChart(graphA, graphB, algoA, algoB, GPTS);
+    await new Promise(r=>setTimeout(r, 30));
+  }
+
+  // fill graph
+  for (let i=0;i<GPTS;i++) {
+    if (!graphA[i]) graphA[i] = stepsA.slice(-1)[0]?.comparisons||0;
+    if (!graphB[i]) graphB[i] = stepsB.slice(-1)[0]?.comparisons||0;
+  }
+  drawCmpChart(graphA, graphB, algoA, algoB, GPTS);
+
+  // show winner
+  if (winner) {
+    const wAlgo = winner==="A" ? algoA : algoB;
+    const wCard = document.getElementById(`cmp-card-${winner}`);
+    wCard.style.borderColor = winner==="A"?"#6366f1":"#f43f8e";
+    wCard.style.boxShadow   = `0 0 0 3px ${winner==="A"?"rgba(99,102,241,0.2)":"rgba(244,63,142,0.2)"}`;
+    const loseSteps = winner==="A"?stepsB.length:stepsA.length;
+    const winSteps  = winner==="A"?stepsA.length:stepsB.length;
+    const banner = document.getElementById("winner-banner");
+    banner.style.display="block";
+    banner.innerHTML = `🏆 ${wAlgo.emoji} <strong>${wAlgo.name}</strong> wins! Finished in ${winSteps} steps vs ${loseSteps} steps — ${Math.round((1-(winSteps/loseSteps))*100)}% fewer steps!`;
+  }
+
+  btn.disabled=false;
+}
+
+function drawCmpChart(dataA, dataB, algoA, algoB, pts) {
+  const canvas = document.getElementById("cmp-chart");
+  const W = canvas.clientWidth, H = canvas.clientHeight;
+  if (!W||!H) return;
+  canvas.width  = W * devicePixelRatio;
+  canvas.height = H * devicePixelRatio;
+  const ctx = canvas.getContext("2d");
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+  ctx.clearRect(0,0,W,H);
+
+  const maxV = Math.max(1, ...(dataA.filter(Boolean)), ...(dataB.filter(Boolean)));
+
+  // grid
+  ctx.strokeStyle="#dde3f844"; ctx.lineWidth=1;
+  for (let i=0;i<=3;i++) {
+    const y=8+(i/3)*(H-16);
+    ctx.beginPath();ctx.moveTo(30,y);ctx.lineTo(W-4,y);ctx.stroke();
+  }
+
+  // lines
+  [[dataA,"#6366f1",algoA],[dataB,"#f43f8e",algoB]].forEach(([data,color,algo]) => {
+    const pts2 = data.filter((v,i)=>v!=null);
+    if (pts2.length<2) return;
+    ctx.strokeStyle=color; ctx.lineWidth=2.5; ctx.lineJoin="round";
+    ctx.beginPath();
+    data.forEach((v,i) => {
+      if (v==null) return;
+      const x=30+(i/(pts-1))*(W-34);
+      const y=H-8-(v/maxV)*(H-16);
+      i===0||data[i-1]==null?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+  });
+
+  // legend
+  ctx.font="11px Nunito"; ctx.fontWeight="700";
+  [[algoA,"#6366f1",0],[algoB,"#f43f8e",1]].forEach(([a,color,i])=>{
+    ctx.fillStyle=color;
+    ctx.fillRect(30+i*120,H-12,14,3);
+    ctx.fillStyle="#6b7280";
+    ctx.fillText(`${a.emoji} ${a.name}`, 48+i*120, H-4);
+  });
+
+  // y axis
+  ctx.fillStyle="#9ca3af"; ctx.font="9px 'JetBrains Mono'";
+  ctx.fillText(maxV, 0, 12);
+  ctx.fillText("0", 2, H-14);
+}
+
+document.getElementById("cmp-run-btn").onclick = runCompare;
+
+/* ═══════════════════════════════════════
+   INIT
+═══════════════════════════════════════ */
+renderCodeBlock();
+genCodeArr();
+</script>
+</body>
+</html>
